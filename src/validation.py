@@ -45,6 +45,11 @@ churn_schema = DataFrameSchema(
         Check(lambda df: ((df["PhoneService"] == "No")
                           == (df["MultipleLines"] == "No phone service")).all(),
               error="PhoneService 'No' harus berpasangan dengan MultipleLines 'No phone service'"),
+        Check(lambda df: ((df["InternetService"] == "No")
+                          == (df[["OnlineSecurity", "OnlineBackup", "DeviceProtection",
+                                  "TechSupport", "StreamingTV", "StreamingMovies"]]
+                              == "No internet service").all(axis=1)).all(),
+              error="InternetService 'No' harus berpasangan dengan semua kolom addon 'No internet service'"),
     ],
     strict=True,
 )
