@@ -19,3 +19,7 @@ model:
 output:
   model_path: models/model.joblib
   metrics_path: reports/metrics.json
+
+validation:
+  max_bad_ratio: 0.01
+  quarantine_path: data/quarantine/bad_rows.csv

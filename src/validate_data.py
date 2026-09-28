@@ -5,7 +5,7 @@ from src.validation import validate
 
 def main():
     cfg = load_config()
-    df = validate(clean(load_raw(cfg["data"]["raw_path"])))
+    df = validate(clean(load_raw(cfg["data"]["raw_path"])), **cfg["validation"])
     print(f"Data valid: {len(df)} baris, {df.shape[1]} kolom")
 
 
