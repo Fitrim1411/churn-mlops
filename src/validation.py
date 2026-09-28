@@ -42,6 +42,9 @@ churn_schema = DataFrameSchema(
               error="Jumlah baris terlalu sedikit (minimal 1000)"),
         Check(lambda df: (df.loc[df["tenure"] == 0, "TotalCharges"] == 0).all(),
               error="Pelanggan dengan tenure 0 harus punya TotalCharges 0"),
+        Check(lambda df: ((df["PhoneService"] == "No")
+                          == (df["MultipleLines"] == "No phone service")).all(),
+              error="PhoneService 'No' harus berpasangan dengan MultipleLines 'No phone service'"),
     ],
     strict=True,
 )
