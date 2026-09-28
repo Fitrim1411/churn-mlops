@@ -1,0 +1,6 @@
+{
+  "roc_auc": 0.842,
+  "precision_churn": 0.6572,
+  "recall_churn": 0.5588,
+  "f1_churn": 0.604
+}

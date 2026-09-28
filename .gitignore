@@ -1,0 +1,16 @@
+# Virtual environment
+churn_mlops.venv/
+
+# Cache Python
+__pycache__/
+*.pyc
+
+# Data dan model (nanti dikelola DVC di pelajaran 5)
+data/
+models/
+
+# File sistem Mac
+.DS_Store
+
+# Pengaturan editor
+.vscode/
