@@ -5,7 +5,7 @@ import pandas as pd
 
 
 def download_data(url: str, out_path: str) -> Path:
-    """Unduh data mentah dari URL ke out_path."""
+    """Download the raw dataset from url to out_path."""
     out = Path(out_path)
     out.parent.mkdir(parents=True, exist_ok=True)
     urllib.request.urlretrieve(url, out)
@@ -13,21 +13,21 @@ def download_data(url: str, out_path: str) -> Path:
 
 
 def load_raw(path: str) -> pd.DataFrame:
-    """Baca data mentah dari CSV."""
+    """Read the raw data from a CSV file."""
     return pd.read_csv(path)
 
 
 def clean(df: pd.DataFrame) -> pd.DataFrame:
-    """Bersihkan data mentah. Tidak mengubah DataFrame aslinya."""
+    """Clean the raw data. Returns a new DataFrame; the input is not modified."""
     df = df.copy()
     df["TotalCharges"] = pd.to_numeric(df["TotalCharges"], errors="coerce")
-    # Pelanggan baru (tenure 0) belum pernah ditagih, jadi total tagihannya 0
+    # New customers (tenure 0) have never been billed, so their total charges are 0
     df.loc[df["tenure"] == 0, "TotalCharges"] = 0.0
     return df
 
 
 def split_xy(df: pd.DataFrame, target: str, id_column: str):
-    """Pisahkan fitur (X) dan label (y)."""
+    """Split the data into features (X) and label (y)."""
     y = (df[target] == "Yes").astype(int)
     X = df.drop(columns=[target, id_column])
     return X, y

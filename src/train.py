@@ -34,7 +34,7 @@ def main():
     model = build_model(cfg["model"], build_preprocessor(num_cols, cat_cols))
     model.fit(X_train, y_train)
 
-    # Evaluasi
+    # Evaluate
     proba = model.predict_proba(X_test)[:, 1]
     pred = model.predict(X_test)
     metrics = {
@@ -45,20 +45,20 @@ def main():
     }
     print(f"Model: {cfg['model']['type']}")
     print(classification_report(y_test, pred, target_names=["Stay", "Churn"]))
-    print("Metrik:", metrics)
+    print("Metrics:", metrics)
 
-    # Simpan model dan metrik
+    # Save model and metrics
     model_path = Path(cfg["output"]["model_path"])
     metrics_path = Path(cfg["output"]["metrics_path"])
     model_path.parent.mkdir(parents=True, exist_ok=True)
     metrics_path.parent.mkdir(parents=True, exist_ok=True)
     joblib.dump(model, model_path)
     metrics_path.write_text(json.dumps(metrics, indent=2))
-    print(f"Model tersimpan di {model_path}, metrik di {metrics_path}")
+    print(f"Model saved to {model_path}, metrics saved to {metrics_path}")
 
-    # Catat eksperimen ke MLflow
+    # Log the experiment to MLflow
     run_id = log_run(cfg, metrics)
-    print(f"Eksperimen tercatat di MLflow, run_id: {run_id}")
+    print(f"Experiment logged to MLflow, run_id: {run_id}")
 
 
 if __name__ == "__main__":

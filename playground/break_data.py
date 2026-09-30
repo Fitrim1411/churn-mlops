@@ -5,13 +5,13 @@ from src.validation import validate
 cfg = load_config()
 df = clean(load_raw(cfg["data"]["raw_path"]))
 
-# Sengaja merusak data dengan berbagai cara
-df.loc[0, "MonthlyCharges"] = -50.0               # tagihan negatif
-df.loc[1, "Contract"] = "Three year"               # kategori tak dikenal
-df.loc[2, "Churn"] = "Maybe"                       # label aneh
-df.loc[3, "customerID"] = df.loc[4, "customerID"]  # ID dobel
-df.loc[5, "PhoneService"] = "No"                   # tanpa telepon...
-df.loc[5, "MultipleLines"] = "Yes"                 # ...tapi punya banyak saluran
-#df = df.drop(columns=["PaymentMethod"])            # kolom hilang
+# Deliberately corrupt the data in several ways
+df.loc[0, "MonthlyCharges"] = -50.0               # negative charges
+df.loc[1, "Contract"] = "Three year"               # unknown category
+df.loc[2, "Churn"] = "Maybe"                       # invalid label
+df.loc[3, "customerID"] = df.loc[4, "customerID"]  # duplicate ID
+df.loc[5, "PhoneService"] = "No"                   # no phone service...
+df.loc[5, "MultipleLines"] = "Yes"                 # ...but multiple lines
+# df = df.drop(columns=["PaymentMethod"])          # missing column
 
 validate(df, **cfg["validation"])

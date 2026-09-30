@@ -10,28 +10,28 @@ ADDON_COLS = ["OnlineSecurity", "OnlineBackup", "DeviceProtection",
               "TechSupport", "StreamingTV", "StreamingMovies"]
 
 
-# ---------- Aturan antar-kolom (dijawab per baris) ----------
+# ---------- Cross-column rules (evaluated per row) ----------
 
-def tenure_nol_berarti_tagihan_nol(df):
-    """Per baris: kalau tenure 0, TotalCharges harus 0."""
+def zero_tenure_has_zero_charges(df):
+    """Per row: if tenure is 0, TotalCharges must be 0."""
     return (df["tenure"] != 0) | (df["TotalCharges"] == 0)
 
 
-def telepon_konsisten(df):
-    """Per baris: tanpa telepon <=> MultipleLines 'No phone service'."""
+def phone_lines_consistent(df):
+    """Per row: no phone service <=> MultipleLines is 'No phone service'."""
     return (df["PhoneService"] == "No") == (df["MultipleLines"] == "No phone service")
 
 
-def addon_konsisten(df):
-    """Per baris: tanpa internet <=> semua addon 'No internet service'."""
-    tanpa_internet = df["InternetService"] == "No"
+def addons_consistent(df):
+    """Per row: no internet service <=> every add-on is 'No internet service'."""
+    no_internet = df["InternetService"] == "No"
     ok = pd.Series(True, index=df.index)
     for col in ADDON_COLS:
-        ok = ok & (tanpa_internet == (df[col] == "No internet service"))
+        ok = ok & (no_internet == (df[col] == "No internet service"))
     return ok
 
 
-# ---------- Skema ----------
+# ---------- Schema ----------
 
 churn_schema = DataFrameSchema(
     columns={
@@ -62,49 +62,49 @@ churn_schema = DataFrameSchema(
     },
     checks=[
         Check(lambda df: len(df) >= 1000,
-              error="Jumlah baris terlalu sedikit (minimal 1000)"),
-        Check(tenure_nol_berarti_tagihan_nol,
-              error="Pelanggan dengan tenure 0 harus punya TotalCharges 0"),
-        Check(telepon_konsisten,
-              error="PhoneService 'No' harus berpasangan dengan MultipleLines 'No phone service'"),
-        Check(addon_konsisten,
-              error="InternetService 'No' harus berpasangan dengan semua addon 'No internet service'"),
+              error="Too few rows (minimum 1000)"),
+        Check(zero_tenure_has_zero_charges,
+              error="Customers with tenure 0 must have TotalCharges 0"),
+        Check(phone_lines_consistent,
+              error="PhoneService 'No' must pair with MultipleLines 'No phone service'"),
+        Check(addons_consistent,
+              error="InternetService 'No' must pair with 'No internet service' in all add-ons"),
     ],
     strict=True,
 )
 
 
-# ---------- Validasi dengan karantina ----------
+# ---------- Validation with quarantine ----------
 
 def validate(df: pd.DataFrame, max_bad_ratio: float, quarantine_path: str) -> pd.DataFrame:
-    """Validasi data. Error struktural -> berhenti. Error per baris -> karantina,
-    selama jumlahnya tidak melebihi max_bad_ratio."""
+    """Validate the data. Structural errors stop the pipeline. Row-level errors
+    are quarantined, as long as they stay within max_bad_ratio."""
     try:
         return churn_schema.validate(df, lazy=True)
     except pa.errors.SchemaErrors as err:
         cases = err.failure_cases
 
-        # 1. Error struktural: tidak menunjuk baris tertentu -> wajib berhenti
-        struktural = cases[cases["index"].isna()]
-        if len(struktural) > 0:
-            print("VALIDASI GAGAL (struktural), pipeline dihentikan:\n")
-            print(struktural[["column", "check", "failure_case"]].to_string(index=False))
+        # 1. Structural errors are not tied to any row -> always stop
+        structural = cases[cases["index"].isna()]
+        if len(structural) > 0:
+            print("VALIDATION FAILED (structural), stopping the pipeline:\n")
+            print(structural[["column", "check", "failure_case"]].to_string(index=False))
             raise SystemExit(1)
 
-        # 2. Error per baris: hitung berapa baris yang bermasalah
+        # 2. Row-level errors: count how many rows are affected
         bad_idx = cases["index"].dropna().unique()
         bad_ratio = len(bad_idx) / len(df)
-        print(f"PERINGATAN: {len(bad_idx)} baris bermasalah ({bad_ratio:.2%} dari data)")
-        ringkasan = cases.dropna(subset=["index"]).groupby("check")["index"].nunique()
-        print(ringkasan.rename("jumlah_baris").to_string())
+        print(f"WARNING: {len(bad_idx)} invalid rows ({bad_ratio:.2%} of the data)")
+        summary = cases.dropna(subset=["index"]).groupby("check")["index"].nunique()
+        print(summary.rename("rows").to_string())
 
         if bad_ratio > max_bad_ratio:
-            print(f"\nMelebihi batas {max_bad_ratio:.2%}, pipeline dihentikan.")
+            print(f"\nExceeds the {max_bad_ratio:.2%} limit, stopping the pipeline.")
             raise SystemExit(1)
 
-        # 3. Masih di bawah batas: pisahkan ke karantina, lanjut dengan data bersih
+        # 3. Within the limit: quarantine the invalid rows, continue with the rest
         out = Path(quarantine_path)
         out.parent.mkdir(parents=True, exist_ok=True)
         df.loc[bad_idx].to_csv(out, index=False)
-        print(f"\nBaris bermasalah dikarantina ke {out}, pipeline lanjut.")
+        print(f"\nInvalid rows quarantined to {out}, pipeline continues.")
         return churn_schema.validate(df.drop(index=bad_idx), lazy=True)

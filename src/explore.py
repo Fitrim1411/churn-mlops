@@ -2,11 +2,11 @@ import pandas as pd
 
 df = pd.read_csv("data/raw/churn.csv")
 
-print("Ukuran data (baris, kolom):", df.shape)
-print("\nTipe data tiap kolom:")
+print("Data shape (rows, columns):", df.shape)
+print("\nColumn data types:")
 print(df.dtypes)
-print("\nDistribusi label Churn:")
+print("\nChurn label distribution:")
 print(df["Churn"].value_counts(normalize=True))
-print("\nContoh nilai TotalCharges yang aneh:")
-kosong = df[pd.to_numeric(df["TotalCharges"], errors="coerce").isna()]
-print(kosong[["customerID", "tenure", "TotalCharges"]])
+print("\nRows with non-numeric TotalCharges:")
+invalid = df[pd.to_numeric(df["TotalCharges"], errors="coerce").isna()]
+print(invalid[["customerID", "tenure", "TotalCharges"]])

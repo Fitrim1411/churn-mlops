@@ -5,7 +5,7 @@ from sklearn.preprocessing import OneHotEncoder, StandardScaler
 
 
 def build_preprocessor(num_cols: list, cat_cols: list) -> ColumnTransformer:
-    """Resep preprocessing untuk kolom numerik dan kategorikal."""
+    """Preprocessing recipe for numeric and categorical columns."""
     numeric = Pipeline([
         ("imputer", SimpleImputer(strategy="median")),
         ("scaler", StandardScaler()),

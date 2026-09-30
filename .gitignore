@@ -1,20 +1,20 @@
 # Virtual environment
 churn_mlops.venv/
 
-# Cache Python
+# Python cache
 __pycache__/
 *.pyc
 
-# Data dan model (nanti dikelola DVC di pelajaran 5)
+# Data and models (to be versioned with DVC later)
 data/
 models/
 
-# File sistem Mac
+# macOS system files
 .DS_Store
 
-# Pengaturan editor
+# Editor settings
 .vscode/
 
-# Catatan MLflow
+# MLflow tracking data
 mlflow.db
 mlruns/
