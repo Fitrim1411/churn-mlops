@@ -11,8 +11,8 @@ def setup_mlflow(cfg: dict) -> None:
 
 
 def git_is_dirty() -> bool:
-    """Return True if the project has uncommitted changes."""
-    status = subprocess.check_output(["git", "status", "--porcelain"], text=True)
+    """Return True if the source code in src/ has uncommitted changes."""
+    status = subprocess.check_output(["git", "status", "--porcelain", "--", "src"], text=True)
     return bool(status.strip())
 
 
