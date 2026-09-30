@@ -2,6 +2,7 @@ import json
 from pathlib import Path
 
 import joblib
+import mlflow
 from sklearn.metrics import (classification_report, f1_score,
                              precision_score, recall_score, roc_auc_score)
 from sklearn.model_selection import train_test_split
@@ -10,13 +11,12 @@ from src.config import load_config
 from src.data import clean, load_raw, split_xy
 from src.features import build_preprocessor
 from src.model import build_model
-from src.tracking import log_run
+from src.tracking import git_is_dirty, log_run, setup_mlflow
 from src.validation import validate
 
 
-def main():
-    cfg = load_config()
-
+def train_and_evaluate(cfg: dict):
+    """Load and validate data, train the model, and evaluate it on the test set."""
     # Data
     df = validate(clean(load_raw(cfg["data"]["raw_path"])), **cfg["validation"])
     X, y = split_xy(df, cfg["data"]["target"], cfg["data"]["id_column"])
@@ -46,8 +46,11 @@ def main():
     print(f"Model: {cfg['model']['type']}")
     print(classification_report(y_test, pred, target_names=["Stay", "Churn"]))
     print("Metrics:", metrics)
+    return model, metrics, X_train
 
-    # Save model and metrics
+
+def save_local(cfg: dict, model, metrics: dict) -> None:
+    """Save the latest model and metrics to local files."""
     model_path = Path(cfg["output"]["model_path"])
     metrics_path = Path(cfg["output"]["metrics_path"])
     model_path.parent.mkdir(parents=True, exist_ok=True)
@@ -56,9 +59,19 @@ def main():
     metrics_path.write_text(json.dumps(metrics, indent=2))
     print(f"Model saved to {model_path}, metrics saved to {metrics_path}")
 
-    # Log the experiment to MLflow
-    run_id = log_run(cfg, metrics)
-    print(f"Experiment logged to MLflow, run_id: {run_id}")
+
+def main():
+    cfg = load_config()
+    setup_mlflow(cfg)
+
+    with mlflow.start_run() as run:
+        # Check for uncommitted changes BEFORE training writes any files
+        mlflow.set_tag("git_dirty", str(git_is_dirty()))
+
+        model, metrics, X_train = train_and_evaluate(cfg)
+        save_local(cfg, model, metrics)
+        log_run(cfg, model, metrics, X_train)
+        print(f"Run logged to MLflow, run_id: {run.info.run_id}")
 
 
 if __name__ == "__main__":

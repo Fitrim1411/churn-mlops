@@ -3,10 +3,7 @@ import pandas as pd
 
 from src.config import load_config
 
-cfg = load_config()
-model = joblib.load(cfg["output"]["model_path"])
-
-new_customer = pd.DataFrame([{
+SAMPLE_CUSTOMER = pd.DataFrame([{
     "gender": "Female", "SeniorCitizen": 0, "Partner": "No",
     "Dependents": "No", "tenure": 2, "PhoneService": "Yes",
     "MultipleLines": "No", "InternetService": "Fiber optic",
@@ -18,5 +15,13 @@ new_customer = pd.DataFrame([{
     "MonthlyCharges": 95.5, "TotalCharges": 190.0,
 }])
 
-probability = model.predict_proba(new_customer)[0, 1]
-print(f"Churn probability for this customer: {probability:.1%}")
+
+def main():
+    cfg = load_config()
+    model = joblib.load(cfg["output"]["model_path"])
+    probability = model.predict_proba(SAMPLE_CUSTOMER)[0, 1]
+    print(f"Churn probability for this customer: {probability:.1%}")
+
+
+if __name__ == "__main__":
+    main()
