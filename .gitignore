@@ -14,3 +14,7 @@ models/
 
 # Pengaturan editor
 .vscode/
+
+# Catatan MLflow
+mlflow.db
+mlruns/

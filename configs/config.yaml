@@ -23,3 +23,7 @@ output:
 validation:
   max_bad_ratio: 0.01
   quarantine_path: data/quarantine/bad_rows.csv
+
+tracking:
+  uri: sqlite:///mlflow.db
+  experiment: churn-prediction

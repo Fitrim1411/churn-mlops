@@ -10,6 +10,7 @@ from src.config import load_config
 from src.data import clean, load_raw, split_xy
 from src.features import build_preprocessor
 from src.model import build_model
+from src.tracking import log_run
 from src.validation import validate
 
 
@@ -54,6 +55,10 @@ def main():
     joblib.dump(model, model_path)
     metrics_path.write_text(json.dumps(metrics, indent=2))
     print(f"Model tersimpan di {model_path}, metrik di {metrics_path}")
+
+    # Catat eksperimen ke MLflow
+    run_id = log_run(cfg, metrics)
+    print(f"Eksperimen tercatat di MLflow, run_id: {run_id}")
 
 
 if __name__ == "__main__":
