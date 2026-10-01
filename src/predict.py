@@ -1,5 +1,6 @@
-import joblib
+import mlflow
 import pandas as pd
+from mlflow import MlflowClient
 
 from src.config import load_config
 
@@ -18,8 +19,15 @@ SAMPLE_CUSTOMER = pd.DataFrame([{
 
 def main():
     cfg = load_config()
-    model = joblib.load(cfg["output"]["model_path"])
+    mlflow.set_tracking_uri(cfg["tracking"]["uri"])
+
+    name = cfg["registry"]["model_name"]
+    alias = cfg["registry"]["alias"]
+    model = mlflow.sklearn.load_model(f"models:/{name}@{alias}")
+    version = MlflowClient().get_model_version_by_alias(name, alias).version
+
     probability = model.predict_proba(SAMPLE_CUSTOMER)[0, 1]
+    print(f"Using '{name}' version {version} ({alias})")
     print(f"Churn probability for this customer: {probability:.1%}")
 
 

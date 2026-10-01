@@ -27,3 +27,7 @@ validation:
 tracking:
   uri: sqlite:///mlflow.db
   experiment: churn-prediction
+
+registry:
+  model_name: churn-model
+  alias: champion
