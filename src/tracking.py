@@ -1,3 +1,4 @@
+import hashlib
 import subprocess
 from pathlib import Path
 
@@ -17,6 +18,20 @@ def git_is_dirty() -> bool:
     status = subprocess.check_output(["git", "status", "--porcelain", "--", "src"], text=True)
     return bool(status.strip())
 
+def data_version(data_path: str) -> str:
+    """Return the DVC hash (md5) of a data file, or 'untracked' if DVC
+    is not tracking it."""
+    dvc_file = Path(f"{data_path}.dvc")
+    if not dvc_file.exists():
+        return "untracked"
+    meta = yaml.safe_load(dvc_file.read_text())
+    return meta["outs"][0]["md5"]
+
+def data_is_dirty(data_path: str) -> bool:
+    """Return True if the data file no longer matches its .dvc ticket,
+    i.e. it was changed without running `dvc add`."""
+    actual = hashlib.md5(Path(data_path).read_bytes()).hexdigest()
+    return actual != data_version(data_path)
 
 def log_run(cfg: dict, model, metrics: dict, X_sample) -> None:
     """Log everything needed to understand and reproduce this run
@@ -45,12 +60,3 @@ def log_run(cfg: dict, model, metrics: dict, X_sample) -> None:
         input_example=X_sample.head(3),
         skops_trusted_types=["numpy.dtype"],
     )
-
-def data_version(data_path: str) -> str:
-    """Return the DVC hash (md5) of a data file, or 'untracked' if DVC
-    is not tracking it."""
-    dvc_file = Path(f"{data_path}.dvc")
-    if not dvc_file.exists():
-        return "untracked"
-    meta = yaml.safe_load(dvc_file.read_text())
-    return meta["outs"][0]["md5"]

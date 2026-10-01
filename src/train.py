@@ -11,7 +11,7 @@ from src.config import load_config
 from src.data import clean, load_raw, split_xy
 from src.features import build_preprocessor
 from src.model import build_model
-from src.tracking import git_is_dirty, log_run, setup_mlflow
+from src.tracking import data_is_dirty, git_is_dirty, log_run, setup_mlflow
 from src.validation import validate
 
 
@@ -67,6 +67,7 @@ def main():
     with mlflow.start_run() as run:
         # Check for uncommitted changes BEFORE training writes any files
         mlflow.set_tag("git_dirty", str(git_is_dirty()))
+        mlflow.set_tag("data_dirty", str(data_is_dirty(cfg["data"]["raw_path"])))
 
         model, metrics, X_train = train_and_evaluate(cfg)
         save_local(cfg, model, metrics)
