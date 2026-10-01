@@ -5,9 +5,11 @@ churn_mlops.venv/
 __pycache__/
 *.pyc
 
-# Data and models (to be versioned with DVC later)
-data/
+# Models (to be versioned with DVC later)
 models/
+
+# Quarantined rows from validation
+data/quarantine/
 
 # macOS system files
 .DS_Store
