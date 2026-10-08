@@ -1,0 +1,77 @@
+schema: '2.0'
+stages:
+  prepare:
+    cmd: python -m src.prepare_data
+    deps:
+    - path: data/raw/churn.csv
+      hash: md5
+      md5: 3b0bfab28a8101b4e4fdd08025a5c235
+      size: 970457
+    - path: src/data.py
+      hash: md5
+      md5: 1a3fd7891c30e00797f95e5228420b5f
+      size: 1025
+    - path: src/prepare_data.py
+      hash: md5
+      md5: 6e22a40c94435b734392258ac8912ffc
+      size: 480
+    - path: src/validation.py
+      hash: md5
+      md5: afc216e56c26c4b8d870b481c59b3561
+      size: 4789
+    params:
+      configs/config.yaml:
+        validation:
+          max_bad_ratio: 0.01
+          quarantine_path: data/quarantine/bad_rows.csv
+    outs:
+    - path: data/processed/churn_clean.csv
+      hash: md5
+      md5: 216b77d4e2386d955a39cfb7f242fed2
+      size: 971911
+  train:
+    cmd: python -m src.train
+    deps:
+    - path: data/processed/churn_clean.csv
+      hash: md5
+      md5: 216b77d4e2386d955a39cfb7f242fed2
+      size: 971911
+    - path: src/features.py
+      hash: md5
+      md5: 7c31d249693ea62a193c51ef9fd42225
+      size: 632
+    - path: src/model.py
+      hash: md5
+      md5: da1ff938a5889932d231ee4fce4b6d1c
+      size: 671
+    - path: src/tracking.py
+      hash: md5
+      md5: 70c13932e724f1553483d3ad2827b67a
+      size: 2341
+    - path: src/train.py
+      hash: md5
+      md5: 3ffa82c2c03a82ccdf5bf27f1b5885c2
+      size: 2842
+    params:
+      configs/config.yaml:
+        features:
+          numeric:
+          - tenure
+          - MonthlyCharges
+          - TotalCharges
+        model:
+          type: logistic_regression
+          params:
+            max_iter: 1000
+        split:
+          test_size: 0.2
+          random_state: 42
+    outs:
+    - path: models/model.joblib
+      hash: md5
+      md5: 1163eb76a09257e20c1d1980a9b8741e
+      size: 7978
+    - path: reports/metrics.json
+      hash: md5
+      md5: 79260d58e3ff5950d559ebcab9d05367
+      size: 98
