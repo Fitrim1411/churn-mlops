@@ -1,0 +1,32 @@
+stages:
+  prepare:
+    cmd: python -m src.prepare_data
+    deps:
+      - data/raw/churn.csv
+      - src/prepare_data.py
+      - src/data.py
+      - src/validation.py
+    params:
+      - configs/config.yaml:
+          - validation
+    outs:
+      - data/processed/churn_clean.csv
+
+  train:
+    cmd: python -m src.train
+    deps:
+      - data/processed/churn_clean.csv
+      - src/train.py
+      - src/features.py
+      - src/model.py
+      - src/tracking.py
+    params:
+      - configs/config.yaml:
+          - features
+          - split
+          - model
+    outs:
+      - models/model.joblib
+    metrics:
+      - reports/metrics.json:
+          cache: false

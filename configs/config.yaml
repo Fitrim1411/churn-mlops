@@ -1,6 +1,7 @@
 data:
   url: https://raw.githubusercontent.com/IBM/telco-customer-churn-on-icp4d/master/data/Telco-Customer-Churn.csv
   raw_path: data/raw/churn.csv
+  processed_path: data/processed/churn_clean.csv
   target: Churn
   id_column: customerID
 

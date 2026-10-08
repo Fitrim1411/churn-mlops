@@ -5,7 +5,7 @@ churn_mlops.venv/
 __pycache__/
 *.pyc
 
-# Models (to be versioned with DVC later)
+# Models (versioned by the DVC pipeline)
 models/
 
 # Quarantined rows from validation

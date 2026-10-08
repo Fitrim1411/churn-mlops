@@ -3,22 +3,22 @@ from pathlib import Path
 
 import joblib
 import mlflow
+import pandas as pd
 from sklearn.metrics import (classification_report, f1_score,
                              precision_score, recall_score, roc_auc_score)
 from sklearn.model_selection import train_test_split
 
 from src.config import load_config
-from src.data import clean, load_raw, split_xy
+from src.data import split_xy
 from src.features import build_preprocessor
 from src.model import build_model
 from src.tracking import data_is_dirty, git_is_dirty, log_run, setup_mlflow
-from src.validation import validate
 
 
 def train_and_evaluate(cfg: dict):
-    """Load and validate data, train the model, and evaluate it on the test set."""
-    # Data
-    df = validate(clean(load_raw(cfg["data"]["raw_path"])), **cfg["validation"])
+    """Load the prepared data, train the model, and evaluate it on the test set."""
+    # Data (already cleaned and validated by the prepare stage)
+    df = pd.read_csv(cfg["data"]["processed_path"])
     X, y = split_xy(df, cfg["data"]["target"], cfg["data"]["id_column"])
     num_cols = cfg["features"]["numeric"]
     cat_cols = [c for c in X.columns if c not in num_cols]
