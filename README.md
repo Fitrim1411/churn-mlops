@@ -15,9 +15,16 @@ pip install -r requirements.txt
 
 ```bash
 python -m src.download_data   # download the raw dataset
-python -m src.validate_data   # check the data against the schema
-python -m src.train           # train, evaluate, and log to MLflow
-python -m src.predict         # score a sample customer
+dvc repro                     # run the pipeline: prepare -> train
+python -m src.predict         # score a sample customer with the champion model
+```
+
+Inspect the pipeline and compare experiments:
+
+```bash
+dvc dag            # show the pipeline graph
+dvc params diff    # parameter changes vs the last commit
+dvc metrics diff   # metric changes vs the last commit
 ```
 
 View experiments in the MLflow UI:
